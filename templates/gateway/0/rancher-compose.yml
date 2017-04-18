@@ -1,0 +1,64 @@
+.catalog:
+  name: "Containerized API Platform (CAP) - Mule Runtime "
+  version: cap-gwy-v1
+  description: |
+    (Experimental) Mule as a Container based Service. 
+  minimum_rancher_version: v0.59.0
+  maintainer: "Venkateshwaran Subramanian <dirosden@gmail.com>"
+  uuid: cap-gwy-v1
+  questions:
+    - variable: mulegrpid
+      description: "Unique Identifier for this group - Can be based on Project or BU or whatever you want the grouping of Services to be based on"
+      label: "Group Identifier - Example: buone | butwo | projectcrm "
+      required: true
+      default:
+      type: "string"  
+    - variable: listenat
+      description: "Listen Path for all HTTP Listeneres within this Container Instance"
+      label: "Listen Path. Example: /crm; /bu1"
+      required: true
+      default: "/api"
+      type: "string" 
+    - variable: muleenv
+      description: "Environment for the Container Instance"
+      label: "Mule Environment - Example: dev | stage | prod"
+      required: true
+      default: "dev"
+      type: "enum"
+      options:
+        - dev
+        - stage
+        - prod
+    - variable: muledeploytype
+      description: "Deployment Style - Folders or Tags"
+      label: "Mule Applications Distribution - Example: Folder | Tag"
+      required: true
+      default: "Folder"
+      type: "enum"
+      options:
+        - Folder
+        - Tag
+    - variable: clientid
+      description: "Anypoint Platform - Client ID"
+      label: "Client ID for the Organization that owns this Service"
+      required: false
+      default: ""
+      type: "string"
+    - variable: clientsecret
+      description: "Anypoint Platform - Client Secret"
+      label: "Client Secret for the Organization that owns this Service"
+      required: false
+      default: ""
+      type: "string"
+
+api:
+  scale: 1
+  health_check:
+    port: 8081
+    request_line: GET /ping HTTP/1.0
+    interval: 10000
+    initializing_timeout: 60000
+    unhealthy_threshold: 10
+    strategy: recreate
+    healthy_threshold: 2
+    response_timeout: 10000

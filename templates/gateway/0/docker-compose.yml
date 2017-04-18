@@ -1,0 +1,36 @@
+version: '2'
+services:
+  api:
+    image: dirosden/capruntime:dev
+    expose:
+      - 8081
+      - 7777
+    restart: always
+    labels:
+      traefik.enable: true
+      traefik.port: 8081
+      traefik.domain: ${muleenv}.cap.internal
+      traefik.acme: false
+      traefik.frontend.passHostHeader: true
+      io.rancher.sidekicks: 'mule-data'
+      io.rancher.scheduler.affinity:host_label_ne: runtime.exclude=true
+      capruntime: 'true'
+      io.rancher.container.hostname_override: container_name
+    environment:
+      ORCHESTRATOR: RANCHER
+      MULE_GRPID: ${mulegrpid}
+      SALT_MASTER: grandmaster.saltmaster
+      MULE_ENV: ${muleenv}
+      MULE_DEPLOY_TYPE: ${muledeploytype} 
+      MULE_CLIENTID: ${clientid}
+      MULE_CLIENTSECRET: ${clientsecret}
+      MULE_LISTEN_AT: ${listenat}
+    volumes_from:
+      - mule-data
+  mule-data:
+    labels:
+      io.rancher.container.start_once: 'true'
+    image: busybox
+    command: /bin/true
+    volumes:
+      - /var/log/supervisor

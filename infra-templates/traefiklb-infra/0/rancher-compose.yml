@@ -1,0 +1,28 @@
+.catalog:
+  name: "Containerized API Platform (CAP) - Load Balancer - Infra"
+  version: cap-lbinfra-v1
+  description: |
+    (Experimental) Traefik as a Container Service for Load Balancing
+  minimum_rancher_version: v0.59.0
+  maintainer: "Venkateshwaran Subramanian <dirosden@gmail.com>"
+  uuid: cap-lbinfra-v1
+  questions:
+    - variable: "http_port"
+      description: "Traefik http public port to listen."
+      label: "Http port:"
+      required: true
+      default: 18080
+      type: "int"
+
+traefik:
+  retain_ip: true
+  health_check:
+    port: 8000
+    interval: 5000
+    unhealthy_threshold: 3
+    request_line: 'GET /dashboard/# HTTP/1.0'
+    healthy_threshold: 2
+    response_timeout: 5000
+  metadata:
+    traefik:
+      

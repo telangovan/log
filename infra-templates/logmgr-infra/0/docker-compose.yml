@@ -1,0 +1,176 @@
+version: '2'
+services:
+#
+# Graylog, Mongodb and Elastic Search Service
+#
+  mongodb:
+    image: "mongo:3"
+    volumes_from:
+        - mongodb-datavolume
+    labels:
+        io.rancher.container.hostname_override: container_name
+        io.rancher.sidekicks: mongodb-datavolume
+  mongodb-datavolume:
+    labels:
+        io.rancher.container.hostname_override: container_name
+        io.rancher.container.start_once: true
+    volumes:
+        - /data/db
+    entrypoint: /bin/true
+    image: busybox
+  graylog:
+    restart: always
+    environment:
+        GRAYLOG_PASSWORD_SECRET: somepasswordpepper
+        GRAYLOG_ROOT_PASSWORD_SHA2: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+        GRAYLOG_REST_TRANSPORT_URI: "http://${fqdn}:12900"
+    image: "graylog2/server:2.1.0-1"
+    labels:
+        io.rancher.container.hostname_override: container_name
+        io.rancher.sidekicks: graylog-datavolume
+    volumes_from:
+        - graylog-datavolume
+    links:
+        - mongodb:mongo
+        - elasticsearch:elasticsearch
+    depends_on:
+      - mongo
+      - elasticsearch
+  graylog-lb:
+    restart: always
+    image: rancher/load-balancer-service
+    ports:
+        - 9000:9000
+        - 12900:12900
+    links:
+        # Target services in the same stack will be listed as a link
+        - graylog:graylog
+    labels:
+        io.rancher.scheduler.global: 'true'
+  graylog-datavolume:
+    labels:
+        io.rancher.container.hostname_override: container_name
+        io.rancher.container.start_once: true
+    volumes:
+        - /graylog/data
+        - /graylog/logs
+        - /graylog/plugins
+        - /graylog/config
+    entrypoint: /bin/true
+    image: busybox
+  elasticsearch:
+    image: "elasticsearch:2"
+    command: "elasticsearch -Des.cluster.name='graylog'"
+    volumes:
+      - /graylog/data/elasticsearch:/usr/share/elasticsearch/data
+#
+# Zookeeper Service
+#
+  zookeeper:
+    tty: true
+    image: rawmind/alpine-zk:3.4.9
+    restart: always
+    volumes_from:
+      - zookeeper-volume
+      - zookeeper-conf
+    environment:
+      - JVMFLAGS=-Xmx512m -Xms512m
+      - ZK_DATA_DIR=/opt/zk/data
+      - ZK_INIT_LIMIT=10
+      - ZK_MAX_CLIENT_CXNS=500
+      - ZK_SYNC_LIMIT=10
+      - ZK_TICK_TIME=10000
+    labels: 
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.sidekicks: zookeeper-volume, zookeeper-conf
+  zookeeper-conf:
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.start_once: true
+    image: rawmind/rancher-zk:3.4.8-5
+    volumes:
+      - /opt/tools
+  zookeeper-volume:
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.start_once: true
+    environment:
+      - SERVICE_UID=10002
+      - SERVICE_GID=10002
+      - SERVICE_VOLUME=/opt/zk/data
+    volumes:
+      - /opt/zk/data
+    volume_driver: local
+    image: rawmind/alpine-volume:0.0.2-1
+#
+# Kafka Service
+#
+  kafkabroker:
+    tty: true
+    image: rawmind/alpine-kafka:0.10.0.1-1
+    restart: always
+    volumes_from:
+      - kafkabroker-volume
+      - kafkabroker-conf
+    environment:
+      - JVMFLAGS=-Xmx512m -Xms512m
+      - CONFD_INTERVAL=60
+      - ZK_SERVICE=zookeeper
+      - KAFKA_DELETE_TOPICS=false
+      - KAFKA_LOG_DIRS=/opt/kafka/logs
+      - KAFKA_LOG_RETENTION_HOURS=168
+      - KAFKA_NUM_PARTITIONS=1
+      - ADVERTISE_PUB_IP=false
+    links:
+      - zookeeper:zookeeper
+    labels: 
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.sidekicks: kafkabroker-volume, kafkabroker-conf
+  kafkabroker-conf:
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.start_once: true
+    image: dirosden/capkafkaconf:dev
+    volumes:
+      - /opt/tools
+  kafkabroker-volume:
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.start_once: true
+    environment:
+      - SERVICE_UID=10003
+      - SERVICE_GID=10003
+      - SERVICE_VOLUME=/opt/kafka/logs
+    volumes:
+      - /opt/kafka/logs
+    volume_driver: local
+    image: rawmind/alpine-volume:0.0.2-1
+#
+# Logagent Service
+#
+  logagent:
+    image: dirosden/caplogagent:dev
+    restart: always
+    ports:
+      - 8000:80
+    environment:
+      KAFKA_TEMPLATE_JSON: 1
+      KAFKA_TEMPLATE: "time=\"{{.Time}}\" container_name=\"{{.Container.Name}}\" source=\"{{.Source}}\" data=\"{{.Data}}\""
+      KAFKA_COMPRESSION_CODEC: snappy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.global: 'true'
+      io.rancher.os.scope: 'system'
+    depends_on:
+      - kafkabroker
+    links:
+      - kafkabroker:kafkabroker

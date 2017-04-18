@@ -1,0 +1,36 @@
+.catalog:
+    name: "Graylog"
+    version: "v2.1.0-1"
+    description: "Graylog based Log Analytics infrastructure"
+    questions:
+        - variable: fqdn
+          description: "IP of the Host"
+          label: "FQDN"
+          type: "string"
+          required: true
+        - variable: scale
+          description: "Number of instances to launch for High Availability. Currently applicable for only forming Zookeeper and Kafka quorums."
+          label: "Scale Factor"
+          required: true
+          default: 3
+          type: "int"
+zookeeper:
+  scale: 3
+  retain_ip: true
+  health_check:
+    port: 2181
+    interval: 5000
+    unhealthy_threshold: 3
+    request_line: ''
+    healthy_threshold: 2
+    response_timeout: 5000
+kafkabroker:
+  scale: 3
+  retain_ip: true
+  health_check:
+    port: 9092
+    interval: 5000
+    unhealthy_threshold: 3
+    request_line: ''
+    healthy_threshold: 2
+    response_timeout: 5000

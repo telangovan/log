@@ -1,0 +1,31 @@
+.catalog:
+  name: "Containerized API Platform (CAP) - Application Deployment Manager "
+  version: cap-saltmstrgwy-v1
+  description: |
+    (Experimental) Salt as a Container based Service for API Platform Configuration Management
+  minimum_rancher_version: v0.59.0
+  maintainer: "Venkateshwaran Subramanian <dirosden@gmail.com>"
+  uuid: cap-saltmstrgwy-v1
+  questions:
+    - variable: appfolder
+      description: "Volume to map for Applications - Ensure all grandmasters have access to this Shared Repo."
+      label: "Shared Location Path for Apps"
+      required: true
+      default: ""
+      type: "string"
+    - variable: keyfolder
+      description: "Volume to map for Keys - Ensure all grandmasters have access to this Shared Repo."
+      label: "Shared Location Path for Keys"
+      required: true
+      default: ""
+      type: "string"
+
+grandmaster:
+  scale: 1
+  health_check:
+    port: 4505
+    interval: 5000
+    initializing_timeout: 60000
+    unhealthy_threshold: 10
+    healthy_threshold: 2
+    response_timeout: 60000

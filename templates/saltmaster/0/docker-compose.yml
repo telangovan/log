@@ -1,0 +1,29 @@
+version: '2'
+services:
+  grandmaster:
+    image: dirosden/capcfgmgr:dev
+    restart: always
+    ports:
+    - 4505:4505/tcp
+    - 4506:4506/tcp
+    restart: always
+    labels:
+      io.rancher.sidekicks: 'salt-data'
+      io.rancher.scheduler.affinity:host_label: config.manager=true
+      io.rancher.scheduler.affinity:container_label_ne: grandmaster=true
+      grandmaster: 'true'
+      io.rancher.container.hostname_override: container_name
+    environment:
+      ORCHESTRATOR: RANCHER
+      SALT_MASTER_ID: grandmaster.saltmaster
+    volumes_from:
+    - salt-data
+  salt-data:
+    labels:
+      io.rancher.container.start_once: 'true'
+    image: busybox
+    command: /bin/true
+    volumes:
+      - /var/log/supervisor
+      - ${appfolder}:/usr/local/share/applications
+      - ${keyfolder}:/etc/salt/pki/master

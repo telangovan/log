@@ -1,0 +1,32 @@
+version: '2'
+services:
+  traefik:
+    image: rawmind/alpine-traefik:1.1.1-1
+    restart: always
+    ports:
+      - 18000:8000/tcp
+      - ${http_port}:${http_port}/tcp
+    labels:
+      io.rancher.scheduler.global: 'true'
+      io.rancher.scheduler.affinity:host_label: load.balancer=true
+      io.rancher.scheduler.affinity:container_label_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.sidekicks: traefik-conf
+      io.rancher.container.hostname_override: container_name
+    tty: true
+    environment:
+      - CONF_INTERVAL=10
+      - TRAEFIK_HTTPS_ENABLE=false
+      - TRAEFIK_HTTP_PORT=${http_port}
+    volumes_from:
+      - traefik-conf
+
+  traefik-conf:
+    labels:
+      io.rancher.scheduler.global: 'true'
+      io.rancher.scheduler.affinity:host_label: load.balancer=true
+      io.rancher.scheduler.affinity:container_label_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
+      io.rancher.container.start_once: 'true'
+    tty: true
+    image: rawmind/rancher-traefik:0.3.4-10
+    volumes:
+      - /opt/tools
