@@ -2,7 +2,7 @@ name: Containerized API Platform (CAP) - Application Deployment Manager
 description: |
   Containerized API Platform (CAP) - Application Deployment Manager 
 version: cap-saltmstrgwy-v1
-category: API Management Platform
+category: CAP Platform
 maintainer: Venkateshwaran Subramanian
 license: Apache
-projectURL: http://bitbucket.org/dirosbit/apiplatform.git
+projectURL: http://bitbucket.org/dirosbit/captemplate.git

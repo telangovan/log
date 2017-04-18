@@ -2,7 +2,7 @@ name: Containerized API Platform (CAP) - Log Manager
 description: |
   Containerized API Platform (CAP) - Simplified Log Manager 
 version: cap-logmgr-v1
-category: API Management Platform
+category: CAP Platform
 maintainer: Venkateshwaran Subramanian
 license: Apache
-projectURL: http://bitbucket.org/dirosbit/apiplatform.git
+projectURL: http://bitbucket.org/dirosbit/captemplate.git
