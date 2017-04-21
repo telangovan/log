@@ -15,7 +15,7 @@
           default: 3
           type: "int"
 zookeeper:
-  scale: 3
+  scale: ${scale}
   retain_ip: true
   health_check:
     port: 2181
@@ -25,7 +25,7 @@ zookeeper:
     healthy_threshold: 2
     response_timeout: 5000
 kafkabroker:
-  scale: 3
+  scale: ${scale}
   retain_ip: true
   health_check:
     port: 9092
