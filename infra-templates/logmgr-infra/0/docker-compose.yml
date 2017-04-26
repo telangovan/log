@@ -155,7 +155,7 @@ services:
 # Logagent Service
 #
   logagent:
-    image: dirosden/caplogagent:dev
+    image: elu/caplogagent:dev
     restart: always
     ports:
       - 8000:80
