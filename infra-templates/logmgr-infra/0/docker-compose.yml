@@ -160,6 +160,7 @@ services:
     ports:
       - 8000:80
     environment:
+      DEBUG: true
       KAFKA_TEMPLATE_JSON: 1
       KAFKA_TEMPLATE: "time=\"{{.Time}}\" container_name=\"{{.Container.Name}}\" source=\"{{.Source}}\" data=\"{{.Data}}\""      
       KAFKA_COMPRESSION_CODEC: snappy
