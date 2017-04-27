@@ -162,7 +162,7 @@ services:
     environment:
       DEBUG: true
       KAFKA_TEMPLATE_JSON: 1
-      KAFKA_TEMPLATE: "time=\"{{.Time}}\" container_name=\"{{.Container.Name}}\" source=\"{{.Source}}\" data=\"{{.Data}}\""      
+      KAFKA_TEMPLATE: sorinai={{`{{.Lbl "io.rancher.container.name"}}`}}      
       KAFKA_COMPRESSION_CODEC: snappy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
