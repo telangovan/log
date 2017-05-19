@@ -112,6 +112,8 @@ services:
     tty: true
     image: rawmind/alpine-kafka:0.10.0.1-1
     restart: always
+    ports:
+      - 9092:9092
     volumes_from:
       - kafkabroker-volume
       - kafkabroker-conf
