@@ -105,6 +105,8 @@ services:
       - /opt/zk/data
     volume_driver: local
     image: rawmind/alpine-volume:0.0.2-1
+    ports:
+        - 2181:2181
 #
 # Kafka Service
 #
